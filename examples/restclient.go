@@ -69,7 +69,12 @@ func main() {
 	// Close the server when test finishes
 	defer server.Close()
 
-	c := NewMyApiClient(server.URL)
+	c := NewMyApiClient(server.URL,
+		cl.WithDebug(true),
+		cl.WithRequestOptions(func(req *http.Request) (e error) {
+		req.Header.Add("User-Agent", "my-api-client")
+		return
+	}))
 	err := c.V1().Group().DeleteGroup("test")
 	if err != nil {
 		log.Fatalf("filed delete group: %v", err)
