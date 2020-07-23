@@ -88,6 +88,15 @@ func main() {
 	for _, g := range gs {
 		fmt.Printf("%+v\n", g)
 	}
+
+	user, err := c.V1().User().CreateUser(&User{
+		Name: "name",
+		Age:  20,
+	})
+	if err != nil {
+		log.Fatalf("failed to add user: %v", err)
+	}
+	fmt.Printf("%+v\n", user)
 }
 
 func NewMyApiClient(endpoint string, options ...cl.Option) MyApiClient {
@@ -219,7 +228,7 @@ func (api *userV1Client) CreateUserContext(ctx context.Context, req *User) (*Use
 	headers.Add("Content-Type", "application/json")
 	headers.Add("Accept", "application/json")
 
-	var user *User
+	user := &User{}
 	if err := api.DoRequestJson(ctx, http.MethodPost, UserApiV1Path, user,
 		cl.WithBodyOpt(bytes.NewBuffer(data)),
 		cl.WithHeadersOpt(headers)); err != nil {
