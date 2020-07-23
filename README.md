@@ -1,1 +1,3 @@
-# go-http-client
+# Simple Go Http Client
+
+An API client base.
