@@ -175,7 +175,7 @@ func (api *groupV1Client) DeleteGroupContext(ctx context.Context, group string) 
 		"id": {group},
 	}
 
-	if err := api.DoRequest(ctx, http.MethodDelete, GroupApiV1Path, cl.WithQueryOpt(values)); err != nil {
+	if err := api.DoRequestNoBody(ctx, http.MethodDelete, GroupApiV1Path, cl.WithQueryOpt(values)); err != nil {
 		return err
 	}
 	return nil

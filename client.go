@@ -237,18 +237,22 @@ func (c *Client) GetJson(ctx context.Context, path string, intf interface{}, opt
 }
 
 func (c *Client) DoRequestJson(ctx context.Context, method, path string, intf interface{}, options ...RequestOption) error {
-	return c.doRequest(ctx, method, path, JsonParser(intf), options...)
+	return c.DoRequest(ctx, method, path, JsonParser(intf), options...)
 }
 
 func (c *Client) Get(ctx context.Context, path string, options ...RequestOption) error {
-	return c.DoRequest(ctx, http.MethodGet, path, options...)
+	return c.DoRequestNoBody(ctx, http.MethodGet, path, options...)
 }
 
-func (c *Client) DoRequest(ctx context.Context, method, path string, options ...RequestOption) error {
-	return c.doRequest(ctx, method, path, NoBodyParser(c.log), options...)
+func (c *Client) DoRequestNoBody(ctx context.Context, method, path string, options ...RequestOption) error {
+	return c.DoRequest(ctx, method, path, NoBodyParser(c.log), options...)
 }
 
-func (c *Client) doRequest(ctx context.Context, method, path string, parser ResponseParser, options ...RequestOption) error {
+func (c *Client) DoRequestString(ctx context.Context, method, path string, out *string, options ...RequestOption) error {
+	return c.DoRequest(ctx, method, path, RawStringParser(out), options...)
+}
+
+func (c *Client) DoRequest(ctx context.Context, method, path string, parser ResponseParser, options ...RequestOption) error {
 	req, err := http.NewRequestWithContext(ctx, method, c.endpoint+path, nil)
 	if err != nil {
 		return err
