@@ -111,7 +111,11 @@ func WithHeadersOpt(header http.Header) RequestOption {
 		if header == nil || req == nil {
 			return fmt.Errorf("WithHeadersOpt error: %v | %v", req, header)
 		}
-		req.Header = header
+		for k, vs := range header{
+			for _, v := range vs {
+				req.Header.Add(k, v)
+			}
+		}
 		return
 	}
 }
