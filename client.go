@@ -256,6 +256,37 @@ func (c *Client) DoRequestString(ctx context.Context, method, path string, out *
 	return c.DoRequest(ctx, method, path, RawStringParser(out), options...)
 }
 
+func (c *Client) DownloadFile(ctx context.Context, method, path string, headers http.Header, wr io.Writer) error {
+	req, err := http.NewRequest(method, c.endpoint+path, nil)
+	if err != nil {
+		return err
+	}
+
+	for k, v := range headers {
+		for _, h := range v {
+			req.Header.Add(k, h)
+		}
+	}
+
+	req = req.WithContext(ctx)
+	resp, err := c.httpClient.Do(req)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != 200 {
+		return fmt.Errorf("unexpected status code: %v", resp.StatusCode)
+	}
+
+	_, err = io.Copy(wr, resp.Body)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (c *Client) DoRequest(ctx context.Context, method, path string, parser ResponseParser, options ...RequestOption) error {
 	req, err := http.NewRequestWithContext(ctx, method, c.endpoint+path, nil)
 	if err != nil {
