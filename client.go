@@ -256,15 +256,23 @@ func (c *Client) DoRequestString(ctx context.Context, method, path string, out *
 	return c.DoRequest(ctx, method, path, RawStringParser(out), options...)
 }
 
-func (c *Client) DownloadFile(ctx context.Context, method, path string, headers http.Header, wr io.Writer) error {
+func (c *Client) DownloadFile(ctx context.Context, method, path string, wr io.Writer, options ...RequestOption) error {
 	req, err := http.NewRequest(method, c.endpoint+path, nil)
 	if err != nil {
 		return err
 	}
 
-	for k, v := range headers {
-		for _, h := range v {
-			req.Header.Add(k, h)
+	//apply global request options
+	for _, opt := range c.requestOptionsChain {
+		if err := opt(req); err != nil {
+			return fmt.Errorf("failed to apply global request option: %w", err)
+		}
+	}
+
+	//apply custom request options
+	for _, opt := range options {
+		if err := opt(req); err != nil {
+			return fmt.Errorf("failed to apply global request option: %w", err)
 		}
 	}
 
@@ -274,6 +282,10 @@ func (c *Client) DownloadFile(ctx context.Context, method, path string, headers 
 		return err
 	}
 	defer resp.Body.Close()
+
+	if c.debug {
+		logResponse(resp, c.log)
+	}
 
 	if resp.StatusCode != 200 {
 		return fmt.Errorf("unexpected status code: %v", resp.StatusCode)
